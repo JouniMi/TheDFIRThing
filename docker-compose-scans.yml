@@ -14,6 +14,7 @@ services:
       && cp chainsaw.jsonl /tmp/output/chainsaw.jsonl"
 
   hayabusa:
+    platform: "linux/amd64"
     build:
       dockerfile: ./hayabusa/Dockerfile
     volumes:
