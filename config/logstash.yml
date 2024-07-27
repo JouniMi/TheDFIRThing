@@ -1,0 +1,12 @@
+http.host: 0.0.0.0
+node.name: logstash
+path.config: /etc/logstash/conf.d/*.conf
+log.level: "trace" 
+dead_letter_queue.enable: true
+dead_letter_queue.max_bytes: 2048mb
+dead_letter_queue.storage_policy: drop_newer
+path.dead_letter_queue: /etc/logstash/dlq
+pipeline:
+  batch:
+    size: 150
+    delay: 50

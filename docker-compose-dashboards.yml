@@ -1,0 +1,15 @@
+version: '3.6'
+
+services:
+  import-dashboards:
+    image: alpine:latest
+    container_name: import-dashboards
+    volumes:
+      - ./:/tmp/scripts
+      - ./dashboards:/tmp/dashboards
+    command: /bin/sh -c "/usr/bin/dos2unix /tmp/scripts/import.sh && /bin/sh /tmp/scripts/import.sh"
+
+networks:
+  default:
+    name: elk
+    external: true

@@ -1,0 +1,38 @@
+filebeat.modules:
+  - module: iis
+    access:
+      enabled: true
+      var.paths: ["/usr/share/filebeat/filebeat_data/iis/*.log"]
+    error:
+      enabled: false
+      var.paths: ["/usr/share/filebeat/filebeat_data/iiserr/*.log"]
+  - module: apache
+    access:
+      enabled: true
+      var.paths: ["/usr/share/filebeat/filebeat_data/apache/*.log"]
+    error:
+      enabled: true
+      var.paths: ["/usr/share/filebeat/filebeat_data/apacheerr/*.log"]
+
+  - module: nginx
+    access:
+      enabled: true
+      var.paths: ["/usr/share/filebeat/filebeat_data/nginx/*.log"]
+    error:
+      enabled: true
+      var.paths: ["/usr/share/filebeat/filebeat_data/nginxerr/*.log"]            
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  index: "filebeat-logs"
+  allow_older_versions: true
+
+setup.template.name: "fb"
+setup.template.pattern: "fb-*"
+
+processors:
+  - add_docker_metadata:
+      host: "unix:///host_docker/docker.sock"
+
+setup.kibana:
+  host: "http://kibana:5601"

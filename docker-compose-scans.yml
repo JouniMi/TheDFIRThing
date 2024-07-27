@@ -1,0 +1,28 @@
+version: '1'
+
+services:
+  chainsaw:
+    platform: "linux/amd64"
+    build:
+      dockerfile: ./chainsaw/Dockerfile
+    volumes:
+      - ./case_data:/tmp/evidence
+      - ./logstash/ingest/chainsaw_json:/tmp/output
+    command: >
+      bash -c "./tmp/chainsawbin/chainsaw/chainsaw hunt /tmp/evidence -r /tmp/chainsaw/rules/ -s ./tmp/chainsaw/sigma/ --skip-errors --mapping ./tmp/chainsaw/mappings/sigma-event-logs-all.yml --json -o chainsaw.json
+      && jq -c '.[]' chainsaw.json >> chainsaw.jsonl
+      && cp chainsaw.jsonl /tmp/output/chainsaw.jsonl"
+
+  hayabusa:
+    build:
+      dockerfile: ./hayabusa/Dockerfile
+    volumes:
+      - ./case_data:/tmp/evidence
+      - ./logstash/ingest/hayabusa_json:/tmp/output
+    command: >
+      bash -c "./tmp/hayabusa/hayabusa-2.16.0-lin-x64-gnu update-rules
+      && ./tmp/hayabusa/hayabusa-2.16.0-lin-x64-gnu json-timeline -d /tmp/evidence -w -L -o hayabusa.json --ISO-8601 -p super-verbose
+      && cp hayabusa.json /tmp/output/hayabusa.json"
+    depends_on:
+      chainsaw:
+        condition: service_completed_successfully
