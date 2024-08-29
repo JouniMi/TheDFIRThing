@@ -2,7 +2,9 @@
 # The DFIR thing
 The DFIR thing is a project which is meant to be used to parse and analyze data for DFIR purposes. The main idea is to use docker and docker-compose to make it easy to launch a new environment when needed.
 
-Currently only evtx logs are being parsed and they are not parsed as raw. Rather the data is parsed with Chainsaw and Hayabusa. The results are sent to ELK for investigation purposes. Why both Chainsaw and Hayabusa you may ask? Well the reason for that is that I wanted to learn and for learning purposes it made sense to include both. I may leave Chainsaw out in the future if I continue to develop this as Hayabusa works better for the purpose of the solution.
+Supported evidence:
+* Evtx logs are being parsed and they are not parsed as raw. Rather the data is parsed with Chainsaw and Hayabusa. The results are sent to ELK for investigation purposes.
+* Registry files - the script can look for the reg files from the case_data folder and replay logs if needed - the solution runs Regipy plugins against the data and does NOT parse full raw data. *The data ingestion ELK is WIP* 
 
 The main idea is to bring quick results rather than parsing and importing all the data.
 ## The configuration
@@ -18,19 +20,20 @@ This is the main configuration which launches the ELK stack, Filebeat and also a
 This file is fairly simple. It is importing the Kibana saved objects to the ELK stack so that the visualizations are available. It needs to be run separately at your own will.
 
 ### docker-compose-scans.yml
-This one is launching the Chainsaw and Hayabusa containers. The containers target the case_data subfolder - all the EVTX files which you would like to parse should be placed to this folder before running the container.
+This one is launching the Chainsaw and Hayabusa containers. The containers target the case_data subfolder - all the evidence files which you would like to parse should be placed to this folder before running the container. The folder structure does not matter.
 
 ## Running the DFIR thing
 It should be relatively easy to use for anyone who has support for docker. Follow these easy steps:
 
-1. Clone the Git repository Place your EVTX files to the case_data folder. Chainsaw and Hayabusa are able to find them from subfolders so the structure is not very important. 
+1. Clone the Git repository Place your evidence files to the case_data folder. The containers are able to find them from subfolders so the structure is not very important. 
 1. Start the ELK stack (in  root of the cloned repo): *docker-compose up -d*
 1. Wait for the stack to start. Browse to http://localhost:5601 to see that the ELK stack is up and responding. There should be two indices now.
 1. Import dashboards with the following command (in  root of the cloned repo): *docker-compose -f docker-compose-dashboards.yml up*
 1. You should now be able to see the dashboards.
 1. Remove the dashboards container: *docker-compose -f docker-compose-dashboards.yml down*
-1. To parse your evtx logs from the case_data folder run the following command: docker-compose -f docker-compose-scans.yml up
+1. To parse your evidence from the case_data folder run the following command: docker-compose -f docker-compose-scans.yml up
 1. After Chainsaw and Hayabusa containers are successfully launched the data is automatically picked up by Logstash and sent to elasticsearch. The Kibana dashboards should be working.
+1. Regipy container will start after the Chainsaw and Hayabusa have finished. The data is not currently ingested to ELK but rather the JSON files are saved under the ./logstash/ingest/regipy_json -folder and needs to be analyzed by other means.
 1. Remove the scans container: *docker-compose -f docker-compose-scans.yml down*
 1. Start forensicating using Kibana.
 
@@ -63,6 +66,7 @@ The Chainsaw is quite similar but it is more limited. Honestly, the Hayabusa bri
 * **docker-compose.yml** - running ELK.
 * **createindices.sh**  - used by the ELK configuration for creating the indices over the API.
 * **import.sh** - used to import the dashboards over the API.
+* **regipy** - contains files related to the registry parsing.
 
 # Links
 * [Hayabusa](https://github.com/Yamato-Security/hayabusa)
