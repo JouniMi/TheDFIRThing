@@ -27,3 +27,17 @@ services:
     depends_on:
       chainsaw:
         condition: service_completed_successfully
+
+  regipy:
+    platform: "linux/amd64"
+    image: python:3.12
+    volumes:
+      - ./regipy:/tmp/regipy
+      - ./case_data:/tmp/evidence
+      - ./logstash/ingest/regipy_json:/tmp/output
+    command: >
+      bash -c "pip install -r /tmp/regipy/requirements.txt
+      && python /tmp/regipy/parse_registry.py"
+    depends_on:
+      hayabusa:
+        condition: service_completed_successfully
